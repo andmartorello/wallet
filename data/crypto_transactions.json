@@ -1,0 +1,156 @@
+[
+    {
+        "Timestamp": "Aug 20, 2024 12:45:22",
+        "Pair": "BTC/USDT",
+        "Side": "Buy",
+        "Price": "28500.50 USDT",
+        "Order Amount": "0.25 BTC",
+        "Filled Amount": "0.25 BTC",
+        "Executed Amount": "7125.125 USDT",
+        "Trade Fee": "0.0005 BTC",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Aug 15, 2024 14:33:45",
+        "Pair": "ETH/USDT",
+        "Side": "Buy",
+        "Price": "1850.75 USDT",
+        "Order Amount": "2.5 ETH",
+        "Filled Amount": "2.5 ETH",
+        "Executed Amount": "4626.875 USDT",
+        "Trade Fee": "0.005 ETH",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Jul 25, 2024 10:10:32",
+        "Pair": "SOL/USDT",
+        "Side": "Buy",
+        "Price": "25.50 USDT",
+        "Order Amount": "300 SOL",
+        "Filled Amount": "300 SOL",
+        "Executed Amount": "7650 USDT",
+        "Trade Fee": "0.6 SOL",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Jul 01, 2024 12:24:18",
+        "Pair": "ADA/USDT",
+        "Side": "Buy",
+        "Price": "0.35 USDT",
+        "Order Amount": "15000 ADA",
+        "Filled Amount": "15000 ADA",
+        "Executed Amount": "5250 USDT",
+        "Trade Fee": "30 ADA",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Jun 18, 2024 14:52:11",
+        "Pair": "LINK/USDT",
+        "Side": "Buy",
+        "Price": "7.50 USDT",
+        "Order Amount": "600 LINK",
+        "Filled Amount": "600 LINK",
+        "Executed Amount": "4500 USDT",
+        "Trade Fee": "1.2 LINK",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Jun 10, 2024 09:19:44",
+        "Pair": "USDT/EUR",
+        "Side": "Sell",
+        "Price": "0.91 EUR",
+        "Order Amount": "8000 USDT",
+        "Filled Amount": "8000 USDT",
+        "Executed Amount": "7280 EUR",
+        "Trade Fee": "16 USDT",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "May 25, 2024 11:07:21",
+        "Pair": "NEXO/USDT",
+        "Side": "Buy",
+        "Price": "1.25 USDT",
+        "Order Amount": "4000 NEXO",
+        "Filled Amount": "4000 NEXO",
+        "Executed Amount": "5000 USDT",
+        "Trade Fee": "8 NEXO",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "May 10, 2024 15:14:53",
+        "Pair": "MATIC/USDT",
+        "Side": "Buy",
+        "Price": "0.75 USDT",
+        "Order Amount": "6000 MATIC",
+        "Filled Amount": "6000 MATIC",
+        "Executed Amount": "4500 USDT",
+        "Trade Fee": "12 MATIC",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Apr 01, 2024 09:33:00",
+        "Pair": "AVAX/USDT",
+        "Side": "Buy",
+        "Price": "15.20 USDT",
+        "Order Amount": "300 AVAX",
+        "Filled Amount": "300 AVAX",
+        "Executed Amount": "4560 USDT",
+        "Trade Fee": "0.6 AVAX",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Mar 20, 2024 10:10:05",
+        "Pair": "SOL/USDT",
+        "Side": "Buy",
+        "Price": "20.00 USDT",
+        "Order Amount": "150 SOL",
+        "Filled Amount": "150 SOL",
+        "Executed Amount": "3000 USDT",
+        "Trade Fee": "0.3 SOL",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Mar 10, 2024 13:40:19",
+        "Pair": "APT/USDT",
+        "Side": "Buy",
+        "Price": "10.50 USDT",
+        "Order Amount": "400 APT",
+        "Filled Amount": "400 APT",
+        "Executed Amount": "4200 USDT",
+        "Trade Fee": "0.8 APT",
+        "Info": "Transazione"
+    },
+    {
+        "Timestamp": "Sep 17, 2024 10:49:11",
+        "Pair": "MSCI World/EUR",
+        "Side": "Buy",
+        "Price": "94.3504 EUR",
+        "Order Amount": "3 MSCI World",
+        "Filled Amount": "3 MSCI World",
+        "Executed Amount": "283.0512 EUR",
+        "Trade Fee": "0 MSCI World",
+        "Info": "Etf"
+    },
+    {
+        "Timestamp": "Sep 17, 2024 10:51:51",
+        "Pair": "Global Clean Energy/EUR",
+        "Side": "Buy",
+        "Price": "7.5217 EUR",
+        "Order Amount": "3 Global Clean Energy",
+        "Filled Amount": "3 Global Clean Energy",
+        "Executed Amount": "22.5651 EUR",
+        "Trade Fee": "0 Global Clean Energy",
+        "Info": "Etf"
+    },
+    {
+        "Timestamp": "Sep 17, 2024 10:53:05",
+        "Pair": "Emerging Markets/EUR",
+        "Side": "Buy",
+        "Price": "56.09 EUR",
+        "Order Amount": "1 Emerging Markets",
+        "Filled Amount": "1 Emerging Markets",
+        "Executed Amount": "56.09 EUR",
+        "Trade Fee": "0 Emerging Markets",
+        "Info": "Etf"
+    }
+]

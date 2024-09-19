@@ -1,0 +1,12 @@
+{
+    "liquidita": 50,
+    "BTC": 15,
+    "ETH": 8,
+    "SOL": 5,
+    "altcoin": 2,
+    "etf": {
+        "MSCI World": 10,
+        "Global Clean Energy": 3,
+        "Emerging Markets": 7
+    }
+}

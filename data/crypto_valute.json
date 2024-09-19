@@ -1,0 +1,15 @@
+{
+    "USDT/EUR": "tether",
+    "NEXO/USDT": "nexo",
+    "ETH/USDT": "ethereum",
+    "BTC/USDT": "bitcoin",
+    "TON/USDT": "the-open-network",
+    "SOL/USDT": "solana",
+    "SAND/USDT": "the-sandbox",
+    "ADA/USDT": "cardano",
+    "NEAR/USDT": "near",
+    "LINK/USDT": "chainlink",
+    "AVAX/USDT": "avalanche-2",
+    "MATIC/USDT": "matic-network",
+    "APT/USDT": "aptos"
+}
