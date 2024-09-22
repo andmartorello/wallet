@@ -504,52 +504,64 @@ class ApplicationGUI:
         self.balances_text.tag_configure("header", font=("Arial", 12, "bold", "underline"))
         self.balances_text.tag_configure("bold", font=("Arial", 10, "bold"))
         self.balances_text.tag_configure("normal", font=("Arial", 10))
-        
-        current_crypto_prices = self.data_manager.get_current_crypto_prices()
 
-        total_invested_excluding_eur = self.total_invested - self.eur_balance
-        total_current_value_eur = 0  
+        current_crypto_prices = self.data_manager.get_current_crypto_prices()
+        usdt_to_eur_conversion_rate = self.avg_prices.get('USDT', 1)  # Prezzo medio di USDT in EUR calcolato dinamicamente
+
+        total_invested_excluding_eur = 0  # Reset del saldo totale investito in EUR
+        total_current_value_eur = 0
 
         # Aggiungi un'intestazione per le criptovalute
         self.balances_text.insert(tk.END, "Bilanci Criptovalute\n", "header")
 
         # Elaboriamo le crypto e USDT
         for currency, balance in self.balances.items():
+            avg_price_usdt = self.avg_prices.get(currency, 'N/A')
+            avg_price_eur = 'N/A' if avg_price_usdt == 'N/A' else avg_price_usdt * usdt_to_eur_conversion_rate
+            
             if currency != 'USDT' and not currency.startswith('ETF_'):
-                avg_price = self.avg_prices.get(currency, 'N/A')
                 coin_id = self.data_manager.crypto_mapping.get(f"{currency}/USDT", None)
                 current_price_usd = current_crypto_prices.get(coin_id, {}).get('usd', 'N/A')
                 current_price_eur = current_crypto_prices.get(coin_id, {}).get('eur', 'N/A')
 
+                # Calcolo del valore attuale in EUR
                 if current_price_eur != 'N/A':
                     total_current_value_eur += balance * current_price_eur
 
-                percentage_gain = self.portfolio.calculate_percentage_gain(current_price_usd, avg_price)
+                # CORREZIONE: Usa il prezzo medio EUR per calcolare il totale investito in EUR
+                if avg_price_eur != 'N/A':
+                    total_invested_excluding_eur += balance * avg_price_eur
+
+                percentage_gain = self.portfolio.calculate_percentage_gain(current_price_usd, avg_price_usdt)
 
                 color = "green" if percentage_gain != 'N/A' and isinstance(percentage_gain, (int, float)) and percentage_gain > 0 else "red"
-                
+
                 self.balances_text.insert(tk.END, f"{currency}: ", "bold")
-                self.balances_text.insert(tk.END, f"Unità: {balance:.6f}, Prezzo Medio: {avg_price:.2f}, Valore USD: {current_price_usd}, Valore EUR: {current_price_eur}, Guadagno/Perdita: ", "normal")
-                
+                self.balances_text.insert(tk.END, f"Unità: {balance:.6f}, Prezzo Medio USDT: {avg_price_usdt:.2f}, Prezzo Medio EUR: {avg_price_eur:.2f}, Valore USD: {current_price_usd}, Valore EUR: {current_price_eur}, Guadagno/Perdita: ", "normal")
+
                 if isinstance(percentage_gain, (int, float)):
                     self.balances_text.insert(tk.END, f"{percentage_gain:.2f}%\n", color)
                 else:
                     self.balances_text.insert(tk.END, f"{percentage_gain}\n", color)
 
-        # Aggiungi USDT
-        avg_price_usdt = self.avg_prices.get('USDT', 'N/A')
-        current_price_usdt = current_crypto_prices.get('tether', {}).get('eur', 'N/A')
-        usdt_gain_percent = self.portfolio.calculate_percentage_gain(current_price_usdt, avg_price_usdt)
+            elif currency == 'USDT':
+                avg_price_usdt = self.avg_prices.get('USDT', 'N/A')
+                current_price_usdt = current_crypto_prices.get('tether', {}).get('eur', 'N/A')
+                usdt_gain_percent = self.portfolio.calculate_percentage_gain(current_price_usdt, avg_price_usdt)
 
-        total_current_value_eur += self.usdt_balance * current_price_usdt
+                total_current_value_eur += self.usdt_balance * current_price_usdt
 
-        self.balances_text.insert(tk.END, "USDT: ", "bold")
-        self.balances_text.insert(tk.END, f"Unità: {self.usdt_balance:.6f}, Prezzo Medio: {avg_price_usdt}, Valore USD: 1.0, Valore EUR: {current_price_usdt}, Guadagno/Perdita: ", "normal")
-        
-        if isinstance(usdt_gain_percent, (int, float)):
-            self.balances_text.insert(tk.END, f"{usdt_gain_percent:.2f}%\n", "green" if usdt_gain_percent >= 0 else "red")
-        else:
-            self.balances_text.insert(tk.END, f"{usdt_gain_percent}\n", "green" if usdt_gain_percent >= 0 else "red")
+                # Includiamo il saldo USDT nel totale investito usando il prezzo medio EUR
+                if avg_price_usdt != 'N/A':
+                    total_invested_excluding_eur += self.usdt_balance * avg_price_usdt  # Prezzo medio EUR di USDT
+
+                self.balances_text.insert(tk.END, "USDT: ", "bold")
+                self.balances_text.insert(tk.END, f"Unità: {self.usdt_balance:.6f}, Prezzo Medio USD: 1.0, Prezzo Medio EUR: {avg_price_usdt}, Valore USD: 1.0, Valore EUR: {current_price_usdt}, Guadagno/Perdita: ", "normal")
+
+                if isinstance(usdt_gain_percent, (int, float)):
+                    self.balances_text.insert(tk.END, f"{usdt_gain_percent:.2f}%\n", "green" if usdt_gain_percent >= 0 else "red")
+                else:
+                    self.balances_text.insert(tk.END, f"{usdt_gain_percent}\n", "green" if usdt_gain_percent >= 0 else "red")
 
         # Intestazione per gli ETF
         self.balances_text.insert(tk.END, "\nBilanci ETF\n", "header")
@@ -577,6 +589,10 @@ class ApplicationGUI:
                 self.balances_text.insert(tk.END, f"Unità: {balance:.6f}, Prezzo Medio: {avg_price:.2f}, Valore Attuale: {etf_current_value_str}, Guadagno/Perdita: ", "normal")
                 
                 self.balances_text.insert(tk.END, f"{gain_loss_str}\n", color)
+
+                # CORREZIONE: Calcolo dell'investimento in EUR per gli ETF
+                if avg_price != 'N/A':
+                    total_invested_excluding_eur += balance * avg_price
 
                 if etf_current_value != 'N/A':
                     total_current_value_eur += balance * etf_current_value
