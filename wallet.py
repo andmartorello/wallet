@@ -302,6 +302,10 @@ class ApplicationGUI:
         modify_etf_button = ttk.Button(self.left_frame, text="Modifica Prezzo ETF", command=self.update_etf_price, style="Small.TButton")
         modify_etf_button.pack(fill="x", padx=10, pady=5)
         modify_etf_button.config(width=10)
+        
+        add_conto_deposito_button = ttk.Button(self.left_frame, text="Aggiungi Conto Deposito", command=self.add_conto_deposito, style="Small.TButton")
+        add_conto_deposito_button.pack(fill="x", padx=10, pady=5)
+        add_conto_deposito_button.config(width=10)
 
     # ======================= Data Loading and Display =======================
 
@@ -324,19 +328,6 @@ class ApplicationGUI:
         self.display_balances()
         self.display_percentages()
     
-    def display_conto_deposito(self, deposito_totale):
-        self.balances_text.insert(tk.END, "\nConti Deposito\n", "header")
-        
-        for deposito in self.data_manager.conto_deposito["Conto deposito"]:
-            timestamp = deposito["Timestamp"]
-            deposito_type = deposito["Type"]
-            amount = deposito["Filled Amount"]
-            scadenza = deposito["Scadenza"]
-            
-            self.balances_text.insert(tk.END, f"Timestamp: {timestamp}, Tipo: {deposito_type}, Importo: {amount}, Scadenza: {scadenza}\n", "normal")
-        
-        self.balances_text.insert(tk.END, f"\nTotale nei conti deposito: {deposito_totale:.2f} EUR\n", "bold")
-
     def display_crypto_transactions(self, transactions):
         self.crypto_list.delete(*self.crypto_list.get_children())
         for tx in transactions:
@@ -485,6 +476,53 @@ class ApplicationGUI:
 
         self.load_and_display_data()
 
+    def add_conto_deposito(self):
+        def save_conto_deposito():
+            timestamp = datetime.now().strftime("%b %d, %Y %H:%M:%S")
+            deposito_type = type_dropdown.get()
+            filled_amount = filled_amount_entry.get()
+            scadenza = scadenza_entry.get()
+
+            new_deposito = {
+                "Timestamp": timestamp,
+                "Type": deposito_type,
+                "Filled Amount": f"{filled_amount} EUR",
+                "Scadenza": scadenza
+            }
+
+            # Aggiungi il nuovo conto deposito ai dati esistenti
+            self.data_manager.conto_deposito["Conto deposito"].append(new_deposito)
+            
+            # Salva il nuovo conto deposito nel file JSON
+            with open(self.data_manager.conto_deposito_path, 'w') as f:
+                json.dump(self.data_manager.conto_deposito, f, indent=4)
+
+            deposito_window.destroy()
+            self.load_and_display_data()
+
+        # Crea una nuova finestra per inserire i dati del conto deposito
+        deposito_window = tk.Toplevel(self.root)
+        deposito_window.title("Aggiungi Conto Deposito")
+
+        # Tipo di conto deposito (Vincolato o Non vincolato)
+        tk.Label(deposito_window, text="Tipo di Conto:", font=("Arial", 10, "bold")).grid(row=0, column=0, padx=10, pady=5)
+        type_dropdown = ttk.Combobox(deposito_window, values=["Vincolato", "Non vincolato"], state="readonly")
+        type_dropdown.grid(row=0, column=1, padx=10, pady=5)
+
+        # Importo del conto deposito
+        tk.Label(deposito_window, text="Importo (EUR):", font=("Arial", 10, "bold")).grid(row=1, column=0, padx=10, pady=5)
+        filled_amount_entry = ttk.Entry(deposito_window)
+        filled_amount_entry.grid(row=1, column=1, padx=10, pady=5)
+
+        # Scadenza del conto deposito
+        tk.Label(deposito_window, text="Scadenza (es. Nov 19, 2028 13:49:03):", font=("Arial", 10, "bold")).grid(row=2, column=0, padx=10, pady=5)
+        scadenza_entry = ttk.Entry(deposito_window)
+        scadenza_entry.grid(row=2, column=1, padx=10, pady=5)
+
+        # Pulsante per salvare il conto deposito
+        save_button = ttk.Button(deposito_window, text="Aggiungi Conto Deposito", command=save_conto_deposito)
+        save_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+
     def update_etf_price(self):
         def save_etf_price():
             etf_name = etf_name_entry.get()
@@ -546,8 +584,6 @@ class ApplicationGUI:
             scadenza = deposito["Scadenza"]
             
             self.balances_text.insert(tk.END, f"Timestamp: {timestamp}, Tipo: {deposito_type}, Importo: {amount}, Scadenza: {scadenza}\n", "normal")
-        
-        self.balances_text.insert(tk.END, f"\nTotale nei conti deposito: {deposito_totale:.2f} EUR\n", "bold")
 
         # Sezione successiva: Aggiungi i bilanci delle criptovalute
         self.balances_text.insert(tk.END, "\nBilanci Criptovalute\n", "header")
@@ -637,6 +673,7 @@ class ApplicationGUI:
         # Sezione "Saldo Finale"
         self.balances_text.insert(tk.END, "\nSaldo Finale\n", "header")
         self.balances_text.insert(tk.END, f"Saldo finale in EUR: {self.eur_balance:,.2f} EUR\n", "bold")
+        self.balances_text.insert(tk.END, f"\nTotale nei conti deposito: {deposito_totale:.2f} EUR\n", "bold")
         self.balances_text.insert(tk.END, f"Saldo totale investito in EUR (esclusi EUR): {total_invested_excluding_eur:,.2f} EUR\n", "bold")
         self.balances_text.insert(tk.END, f"Valore totale attuale in EUR (esclusi EUR): {total_current_value_eur:,.2f} EUR\n", "bold")
 
@@ -698,10 +735,10 @@ class ApplicationGUI:
             solana_percent = (total_solana_value / total_portfolio_value) * 100
             altcoins_percent = (total_altcoins_value / total_portfolio_value) * 100
 
+            create_progressbar(f"Liquidita (EUR e USDT): {total_liquidity:,.2f} EUR", liquidity_percent, percentuali_target["liquidita"])
+
             # Creiamo la barra per Conto deposito
             create_progressbar(f"Conto deposito: {total_deposito_value:,.2f} EUR", deposito_percent, percentuali_target["Conto deposito"])
-
-            create_progressbar(f"Liquidita (EUR e USDT): {total_liquidity:,.2f} EUR", liquidity_percent, percentuali_target["liquidita"])
 
             # Aggiungi le barre per ogni ETF
             for etf_name, etf_value in etf_values.items():
