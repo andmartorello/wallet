@@ -1,5 +1,6 @@
 {
-    "liquidita": 50,
+    "liquidita": 30,
+    "Conto deposito": 20,
     "BTC": 15,
     "ETH": 8,
     "SOL": 5,
@@ -9,4 +10,5 @@
         "Global Clean Energy": 3,
         "Emerging Markets": 7
     }
+    
 }

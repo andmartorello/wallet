@@ -647,12 +647,13 @@ class ApplicationGUI:
         current_crypto_prices = self.data_manager.get_current_crypto_prices()
         percentuali_target = self.data_manager.percentuali_target
 
-        # Inizializziamo variabili per ETF, BTC, ETH, SOL e Altcoin
+        # Inizializziamo variabili per ETF, BTC, ETH, SOL, Altcoin e Conto Deposito
         total_etf_value = 0
         total_btc_value = 0
         total_eth_value = 0
         total_solana_value = 0
         total_altcoins_value = 0
+        total_deposito_value = sum([float(deposito["Filled Amount"].replace(" EUR", "")) for deposito in self.data_manager.conto_deposito["Conto deposito"]])
         total_liquidity = self.eur_balance + self.usdt_balance * current_crypto_prices.get('tether', {}).get('eur', 0)
 
         etf_values = {}
@@ -679,7 +680,7 @@ class ApplicationGUI:
                 total_altcoins_value += balance * current_price_eur
 
         # Valore totale del portafoglio in EUR
-        total_portfolio_value = total_liquidity + total_etf_value + total_btc_value + total_eth_value + total_solana_value + total_altcoins_value
+        total_portfolio_value = total_liquidity + total_etf_value + total_btc_value + total_eth_value + total_solana_value + total_altcoins_value + total_deposito_value
 
         def create_progressbar(label_text, value, target_value):
             label = tk.Label(self.progress_frame, text=f"{label_text} ({value:.2f}% / {target_value:.2f}%)", font=("Arial", 8, "bold"))
@@ -691,10 +692,14 @@ class ApplicationGUI:
         if total_portfolio_value > 0:
             # Calcolo delle percentuali
             liquidity_percent = (total_liquidity / total_portfolio_value) * 100
+            deposito_percent = (total_deposito_value / total_portfolio_value) * 100
             btc_percent = (total_btc_value / total_portfolio_value) * 100
             eth_percent = (total_eth_value / total_portfolio_value) * 100
             solana_percent = (total_solana_value / total_portfolio_value) * 100
             altcoins_percent = (total_altcoins_value / total_portfolio_value) * 100
+
+            # Creiamo la barra per Conto deposito
+            create_progressbar(f"Conto deposito: {total_deposito_value:,.2f} EUR", deposito_percent, percentuali_target["Conto deposito"])
 
             create_progressbar(f"Liquidita (EUR e USDT): {total_liquidity:,.2f} EUR", liquidity_percent, percentuali_target["liquidita"])
 
@@ -710,6 +715,7 @@ class ApplicationGUI:
             create_progressbar(f"Altcoin (resto): {total_altcoins_value:,.2f} EUR", altcoins_percent, percentuali_target["altcoin"])
         else:
             tk.Label(self.progress_frame, text="Nessun dato disponibile per creare le barre di progresso.", font=("Arial", 10, "bold")).pack(pady=5)
+
 
 # ======================= Main Application =======================
 
