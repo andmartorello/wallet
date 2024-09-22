@@ -735,7 +735,7 @@ class ApplicationGUI:
             solana_percent = (total_solana_value / total_portfolio_value) * 100
             altcoins_percent = (total_altcoins_value / total_portfolio_value) * 100
 
-            create_progressbar(f"Liquidita (EUR e USDT): {total_liquidity:,.2f} EUR", liquidity_percent, percentuali_target["liquidita"])
+            create_progressbar(f"Liquidita: {total_liquidity:,.2f} EUR", liquidity_percent, percentuali_target["liquidita"])
 
             # Creiamo la barra per Conto deposito
             create_progressbar(f"Conto deposito: {total_deposito_value:,.2f} EUR", deposito_percent, percentuali_target["Conto deposito"])
