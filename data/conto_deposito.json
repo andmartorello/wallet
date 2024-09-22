@@ -1,0 +1,16 @@
+{
+    "Conto deposito": [
+        {
+            "Timestamp": "Nov 19, 2023 13:43:03",
+            "Type": "Vincolato",
+            "Filled Amount": "10 EUR",
+            "Scadenza": "Nov 19, 2028 13:49:03"
+        },
+        {
+            "Timestamp": "Nov 19, 2023 13:49:03",
+            "Type": "Non vincolato",
+            "Filled Amount": "1 EUR",
+            "Scadenza": "Nov 19, 2028 13:49:03"
+        }
+    ]
+}

@@ -13,12 +13,19 @@ class DataManager:
         self.crypto_valute_path = "data/crypto_valute.json"
         self.etf_valute_path = "data/etf_valute.json"
         self.percentuali_target_path = "data/percentuali_target.json"
+        self.conto_deposito_path = "data/conto_deposito.json"
 
         self.manual_etf_prices = self.load_manual_etf_prices()
         self.percentuali_target = self.load_percentuali_target()
         self.crypto_mapping = self.load_crypto_valute_mapping()
         self.etf_mapping = self.load_etf_valute_mapping()
-
+        self.conto_deposito = self.load_conto_deposito()  
+    
+    def load_conto_deposito(self):
+        with open(self.conto_deposito_path, 'r') as f:
+            conto_deposito_data = json.load(f)
+        return conto_deposito_data
+    
     def load_manual_etf_prices(self):
         with open(self.etf_valute_path, 'r') as f:
             etf_data = json.load(f)
@@ -304,6 +311,10 @@ class ApplicationGUI:
 
         self.eur_balance, self.total_invested, fiat_transactions = self.transaction_processor.load_fiat_balance()
         fiat_transactions.sort(key=lambda tx: datetime.strptime(tx["Timestamp"], "%b %d, %Y %H:%M:%S"))
+        
+        # Sottrai la liquidità dei conti deposito dal saldo in EUR
+        deposito_totale = sum([float(deposito["Filled Amount"].replace(" EUR", "")) for deposito in self.data_manager.conto_deposito["Conto deposito"]])
+        self.eur_balance -= deposito_totale  # Sottrai la liquidità dei conti deposito
 
         self.display_crypto_transactions(crypto_transactions)
         self.display_fiat_transactions(fiat_transactions)
@@ -312,6 +323,19 @@ class ApplicationGUI:
 
         self.display_balances()
         self.display_percentages()
+    
+    def display_conto_deposito(self, deposito_totale):
+        self.balances_text.insert(tk.END, "\nConti Deposito\n", "header")
+        
+        for deposito in self.data_manager.conto_deposito["Conto deposito"]:
+            timestamp = deposito["Timestamp"]
+            deposito_type = deposito["Type"]
+            amount = deposito["Filled Amount"]
+            scadenza = deposito["Scadenza"]
+            
+            self.balances_text.insert(tk.END, f"Timestamp: {timestamp}, Tipo: {deposito_type}, Importo: {amount}, Scadenza: {scadenza}\n", "normal")
+        
+        self.balances_text.insert(tk.END, f"\nTotale nei conti deposito: {deposito_totale:.2f} EUR\n", "bold")
 
     def display_crypto_transactions(self, transactions):
         self.crypto_list.delete(*self.crypto_list.get_children())
@@ -511,8 +535,22 @@ class ApplicationGUI:
         total_invested_excluding_eur = 0  # Reset del saldo totale investito in EUR
         total_current_value_eur = 0
 
-        # Aggiungi un'intestazione per le criptovalute
-        self.balances_text.insert(tk.END, "Bilanci Criptovalute\n", "header")
+        # Prima sezione: Aggiungi i conti deposito
+        deposito_totale = sum([float(deposito["Filled Amount"].replace(" EUR", "")) for deposito in self.data_manager.conto_deposito["Conto deposito"]])
+        self.balances_text.insert(tk.END, "Conti Deposito\n", "header")
+        
+        for deposito in self.data_manager.conto_deposito["Conto deposito"]:
+            timestamp = deposito["Timestamp"]
+            deposito_type = deposito["Type"]
+            amount = deposito["Filled Amount"]
+            scadenza = deposito["Scadenza"]
+            
+            self.balances_text.insert(tk.END, f"Timestamp: {timestamp}, Tipo: {deposito_type}, Importo: {amount}, Scadenza: {scadenza}\n", "normal")
+        
+        self.balances_text.insert(tk.END, f"\nTotale nei conti deposito: {deposito_totale:.2f} EUR\n", "bold")
+
+        # Sezione successiva: Aggiungi i bilanci delle criptovalute
+        self.balances_text.insert(tk.END, "\nBilanci Criptovalute\n", "header")
 
         # Elaboriamo le crypto e USDT
         for currency, balance in self.balances.items():
@@ -528,7 +566,7 @@ class ApplicationGUI:
                 if current_price_eur != 'N/A':
                     total_current_value_eur += balance * current_price_eur
 
-                # CORREZIONE: Usa il prezzo medio EUR per calcolare il totale investito in EUR
+                # Usa il prezzo medio EUR per calcolare il totale investito in EUR
                 if avg_price_eur != 'N/A':
                     total_invested_excluding_eur += balance * avg_price_eur
 
@@ -563,10 +601,9 @@ class ApplicationGUI:
                 else:
                     self.balances_text.insert(tk.END, f"{usdt_gain_percent}\n", "green" if usdt_gain_percent >= 0 else "red")
 
-        # Intestazione per gli ETF
+        # Sezione per gli ETF
         self.balances_text.insert(tk.END, "\nBilanci ETF\n", "header")
 
-        # Elaborazione dei dati ETF
         for currency, balance in self.balances.items():
             if currency.startswith('ETF_'):
                 avg_price = self.avg_prices.get(currency, 'N/A')
@@ -590,14 +627,14 @@ class ApplicationGUI:
                 
                 self.balances_text.insert(tk.END, f"{gain_loss_str}\n", color)
 
-                # CORREZIONE: Calcolo dell'investimento in EUR per gli ETF
+                # Calcolo dell'investimento in EUR per gli ETF
                 if avg_price != 'N/A':
                     total_invested_excluding_eur += balance * avg_price
 
                 if etf_current_value != 'N/A':
                     total_current_value_eur += balance * etf_current_value
 
-        # Riepilogo del saldo in EUR
+        # Sezione "Saldo Finale"
         self.balances_text.insert(tk.END, "\nSaldo Finale\n", "header")
         self.balances_text.insert(tk.END, f"Saldo finale in EUR: {self.eur_balance:,.2f} EUR\n", "bold")
         self.balances_text.insert(tk.END, f"Saldo totale investito in EUR (esclusi EUR): {total_invested_excluding_eur:,.2f} EUR\n", "bold")
