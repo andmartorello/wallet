@@ -1,12 +1,14 @@
 {
-    "liquidita": 50,
-    "BTC": 15,
-    "ETH": 8,
-    "SOL": 5,
-    "altcoin": 2,
+    "liquidita": 20,
+    "Conto deposito": 10,
+    "Immobili": 15,
+    "BTC": 20,
+    "ETH": 10,
+    "SOL": 3,
+    "altcoin": 1,
     "etf": {
-        "MSCI World": 10,
-        "Global Clean Energy": 3,
-        "Emerging Markets": 7
+        "MSCI World": 15,
+        "MSCI EM": 6
     }
 }
+
