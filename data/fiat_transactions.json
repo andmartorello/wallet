@@ -2,59 +2,16 @@
     "EUR_Balance": 0,
     "Transactions": [
         {
-            "Timestamp": "Oct 15, 2024 09:45:21",
+            "Timestamp": "Oct 28, 2024 15:36:40",
             "Type": "Top Up FIAT",
-            "Filled Amount": "25000 EUR"
+            "Filled Amount": "1740076.17 EUR",
+            "Info": "Normale"
         },
         {
-            "Timestamp": "Sep 25, 2024 11:13:45",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "20000 EUR"
-        },
-        {
-            "Timestamp": "Aug 20, 2024 14:22:12",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "18000 EUR"
-        },
-        {
-            "Timestamp": "Jul 18, 2024 10:40:11",
+            "Timestamp": "Nov 27, 2024 09:18:42",
             "Type": "Withdraw FIAT",
-            "Filled Amount": "2000 EUR"
-        },
-        {
-            "Timestamp": "Jul 10, 2024 08:45:00",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "15000 EUR"
-        },
-        {
-            "Timestamp": "Jun 20, 2024 12:12:13",
-            "Type": "Withdraw FIAT",
-            "Filled Amount": "1000 EUR"
-        },
-        {
-            "Timestamp": "May 30, 2024 15:29:50",
-            "Type": "Withdraw FIAT",
-            "Filled Amount": "3000 EUR"
-        },
-        {
-            "Timestamp": "May 01, 2024 13:17:32",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "10000 EUR"
-        },
-        {
-            "Timestamp": "Mar 25, 2024 11:30:23",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "12000 EUR"
-        },
-        {
-            "Timestamp": "Feb 15, 2024 13:35:12",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "8000 EUR"
-        },
-        {
-            "Timestamp": "Jan 20, 2024 10:22:14",
-            "Type": "Top Up FIAT",
-            "Filled Amount": "5000 EUR"
+            "Filled Amount": "50 EUR",
+            "Info": "Normale"
         }
     ]
 }
