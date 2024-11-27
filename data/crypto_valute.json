@@ -11,5 +11,6 @@
     "LINK/USDT": "chainlink",
     "AVAX/USDT": "avalanche-2",
     "MATIC/USDT": "matic-network",
-    "APT/USDT": "aptos"
+    "APT/USDT": "aptos",
+    "CRO/USDT": "crypto-com-chain"
 }
