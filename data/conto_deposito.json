@@ -1,0 +1,22 @@
+{
+    "Conto deposito": [
+        {
+            "Timestamp": "Sep 22, 2024 14:13:19",
+            "Type": "Vincolato",
+            "Filled Amount": "5000 EUR",
+            "Scadenza": "2028-08-22 00:00:00"
+        },
+        {
+            "Timestamp": "Sep 22, 2024 14:13:58",
+            "Type": "Vincolato",
+            "Filled Amount": "3000 EUR",
+            "Scadenza": "2028-12-01 00:00:00"
+        },
+        {
+            "Timestamp": "Sep 22, 2024 14:14:32",
+            "Type": "Non vincolato",
+            "Filled Amount": "2000 EUR",
+            "Scadenza": "2026-12-03 00:00:00"
+        }
+    ]
+}
