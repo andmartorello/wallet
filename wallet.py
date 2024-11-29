@@ -22,6 +22,7 @@ class DataManager:
         self.percentuali_target_path = "data/percentuali_target.json"
         self.conto_deposito_path = "data/conto_deposito.json"
         self.immobili_data_path = "data/immobili.json"
+        self.selling_prices_path = "data/selling_prices.json"
 
         self.manual_etf_prices = self.load_manual_etf_prices()
         self.percentuali_target = self.load_percentuali_target()
@@ -29,7 +30,8 @@ class DataManager:
         self.etf_mapping = self.load_etf_valute_mapping()
         self.conto_deposito = self.load_conto_deposito()  
         self.immobili_data = self.load_immobili_data()
-    
+        self.selling_prices = self.load_selling_prices()
+
     def load_immobili_data(self):
         try:
             with open(self.immobili_data_path, 'r') as f:
@@ -43,8 +45,6 @@ class DataManager:
     def save_immobili_data(self):
         with open(self.immobili_data_path, 'w') as f:
             json.dump(self.immobili_data, f, indent=4)
-
-    import dateparser  # Assicurati di avere questa importazione in alto
 
     def load_conto_deposito(self):
         try:
@@ -78,6 +78,17 @@ class DataManager:
         with open(self.etf_valute_path, 'r') as f:
             etf_mapping = json.load(f)
         return etf_mapping
+
+    def load_selling_prices(self):
+        try:
+            with open(self.selling_prices_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def save_selling_prices(self, selling_prices):
+        with open(self.selling_prices_path, 'w') as f:
+            json.dump(selling_prices, f, indent=4)
 
     def get_current_crypto_prices(self):
         ids = ','.join(set(v for v in self.crypto_mapping.values() if isinstance(v, str)))
@@ -278,6 +289,7 @@ class ApplicationGUI:
         self.total_immobili_value = 0.0
         self.total_invested_excluding_eur = 0.0  
         self.total_current_value_eur = 0.0  
+        self.selling_prices = self.data_manager.selling_prices
 
         self.style = ttk.Style()
         self.style.theme_use("clam")  
@@ -616,6 +628,91 @@ class ApplicationGUI:
         crypto_vscrollbar.pack(side="right", fill="y")
         self.crypto_list.pack(fill=tk.BOTH, expand=True)
 
+    def update_crypto_tree_item(self, item_id, currency):
+        # Ottieni i dati necessari per aggiornare la riga
+        balance = self.balances.get(currency, 0.0)
+        avg_price_eur = self.avg_prices.get(currency, 'N/A')
+        avg_price_usd = self.avg_prices_usd.get(currency, 'N/A')
+        current_crypto_prices = self.data_manager.get_current_crypto_prices()
+        coin_id = self.data_manager.crypto_mapping.get(f"{currency}/USDT", None)
+        current_price_usd = current_crypto_prices.get(coin_id, {}).get('usd', 'N/A')
+        current_price_eur = current_crypto_prices.get(coin_id, {}).get('eur', 'N/A')
+
+        # Prezzo di Vendita (USD)
+        selling_price_usd = self.selling_prices.get(currency, '')
+
+        # Calcolo del Valore Vendita
+        if selling_price_usd and isinstance(selling_price_usd, (int, float)):
+            total_selling_value_usd = balance * selling_price_usd
+            usd_to_eur_rate = current_crypto_prices.get('tether', {}).get('eur', 0.0)
+            if usd_to_eur_rate > 0:
+                total_selling_value_eur = total_selling_value_usd * usd_to_eur_rate
+                total_selling_value = f"{total_selling_value_usd:.2f} USD / {total_selling_value_eur:.2f} EUR"
+            else:
+                total_selling_value = f"{total_selling_value_usd:.2f} USD / N/A EUR"
+        else:
+            total_selling_value = ''
+
+        # Calcolo del guadagno/perdita
+        percentage_gain = self.portfolio.calculate_percentage_gain(current_price_usd, avg_price_usd)
+        gain_loss_text = (
+            f"▲ {percentage_gain:.2f}%" if isinstance(percentage_gain, (int, float)) and percentage_gain >= 0
+            else f"▼ {abs(percentage_gain):.2f}%" if isinstance(percentage_gain, (int, float)) and percentage_gain < 0
+            else 'N/A'
+        )
+
+        # Aggiorna l'item nella Treeview
+        self.crypto_tree.item(item_id, values=(
+            currency,
+            f"{balance:.6f}",
+            f"{avg_price_usd:.4f}" if avg_price_usd != 'N/A' else 'N/A',
+            f"{avg_price_eur:.4f}" if avg_price_eur != 'N/A' else 'N/A',
+            f"{current_price_usd:.4f}" if current_price_usd != 'N/A' else 'N/A',
+            f"{current_price_eur:.4f}" if current_price_eur != 'N/A' else 'N/A',
+            f"{(balance * current_price_eur):.2f}" if current_price_eur != 'N/A' else 'N/A',
+            f"{selling_price_usd}" if selling_price_usd else '',
+            total_selling_value,
+            gain_loss_text
+        ))
+
+    def edit_selling_price(self, currency, item_id):
+        def save_price():
+            try:
+                new_price = float(price_entry.get())
+                self.selling_prices[currency] = new_price
+                self.update_crypto_tree_item(item_id, currency)
+                self.data_manager.save_selling_prices(self.selling_prices)
+                edit_window.destroy()
+                self.display_summary()
+            except ValueError:
+                messagebox.showerror("Errore", "Inserisci un valore numerico valido.")
+
+        edit_window = tk.Toplevel(self.root)
+        edit_window.title(f"Modifica Prezzo di Vendita per {currency}")
+        edit_window.geometry("300x100")
+
+        ttk.Label(edit_window, text=f"Nuovo Prezzo di Vendita per {currency} (USD):").pack(pady=5)
+        price_entry = ttk.Entry(edit_window)
+        price_entry.pack(pady=5)
+        price_entry.insert(0, str(self.selling_prices.get(currency, '')))
+
+        save_button = ttk.Button(edit_window, text="Salva", command=save_price)
+        save_button.pack(pady=5)
+
+    def on_crypto_tree_double_click(self, event):
+        item_id = self.crypto_tree.identify_row(event.y)
+        column = self.crypto_tree.identify_column(event.x)
+        column_index = int(column.replace('#', '')) - 1  # Indice della colonna
+
+        # Verifica se la colonna è 'Prezzo di Vendita (USD)'
+        if self.crypto_tree['columns'][column_index] == "Prezzo di Vendita (USD)":
+            # Ottieni i dati dell'item selezionato
+            item = self.crypto_tree.item(item_id)
+            currency = item['values'][0]  # La valuta è nella prima colonna
+
+            # Apri una finestra di dialogo per inserire il nuovo prezzo di vendita
+            self.edit_selling_price(currency, item_id)
+
     def create_balances_tab(self):
         self.paned_balances = ttk.Panedwindow(self.balances_tab, orient=tk.VERTICAL)
         self.paned_balances.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -649,12 +746,19 @@ class ApplicationGUI:
         add_conto_deposito_button = ttk.Button(buttons_frame_depositi, text="Aggiungi Conto Deposito", command=self.add_conto_deposito)
         add_conto_deposito_button.pack(side=tk.LEFT, padx=10, pady=5)
 
-        crypto_columns = ("Valuta", "Unità", "Prezzo Medio USD", "Prezzo Medio EUR", "Prezzo Attuale USD", "Prezzo Attuale EUR", "Valore Totale EUR", "Guadagno/Perdita %")
+        crypto_columns = (
+            "Valuta", "Unità", "Prezzo Medio USD", "Prezzo Medio EUR",
+            "Prezzo Attuale USD", "Prezzo Attuale EUR", "Valore Totale EUR",
+            "Prezzo di Vendita (USD)", "Valore Vendita","Guadagno/Perdita %"
+        )
         self.crypto_tree = ttk.Treeview(self.crypto_tab, columns=crypto_columns, show="headings")
+        self.crypto_tree.bind('<Double-1>', self.on_crypto_tree_double_click)
+
         for col in crypto_columns:
             self.crypto_tree.heading(col, text=col)
             self.crypto_tree.column(col, minwidth=0, width=120)
         self.crypto_tree.pack(fill=tk.BOTH, expand=True)
+
 
         etf_columns = ("ETF", "Unità", "Prezzo Medio EUR", "Prezzo Attuale EUR", "Valore Totale EUR", "Guadagno/Perdita %")
         self.etf_tree = ttk.Treeview(self.etf_tab, columns=etf_columns, show="headings")
@@ -702,7 +806,8 @@ class ApplicationGUI:
             ("Totale nei conti deposito:", "totale_depositi"),
             ("Saldo EUR:", "saldo_finale"), 
             ("Saldo investito:", "saldo_investito"),
-            ("Valore attuale investimento:", "valore_attuale")
+            ("Valore attuale investimento:", "valore_attuale"),
+            ("Valore Potenziale di Vendita:", "valore_potenziale_vendita")
         ]
 
         for idx, (text, key) in enumerate(recap_items):
@@ -749,7 +854,7 @@ class ApplicationGUI:
         crypto_transactions.sort(key=lambda tx: dateparser.parse(tx["Timestamp"], languages=['it', 'en']))
         self.eur_balance, self.total_invested, fiat_transactions = self.transaction_processor.load_fiat_balance()
         fiat_transactions.sort(key=lambda tx: dateparser.parse(tx["Timestamp"], languages=['it', 'en']))
-        
+        self.selling_prices = self.data_manager.selling_prices
         deposito_totale = sum([float(deposito["Filled Amount"].replace(" EUR", "")) for deposito in self.data_manager.conto_deposito["Conto deposito"]])
         self.eur_balance -= deposito_totale  
 
@@ -1031,6 +1136,22 @@ class ApplicationGUI:
             avg_price_eur = self.avg_prices.get(currency, 'N/A')
             avg_price_usd = self.avg_prices_usd.get(currency, 'N/A')
 
+            # Prezzo di Vendita (USD)
+            selling_price_usd = self.selling_prices.get(currency, '')
+
+            # Calcolo del Valore Vendita
+            if selling_price_usd and isinstance(selling_price_usd, (int, float)):
+                total_selling_value_usd = balance * selling_price_usd
+                # Converti il valore di vendita in EUR usando il tasso di cambio corrente USD/EUR
+                usd_to_eur_rate = current_crypto_prices.get('tether', {}).get('eur', 0.0)
+                if usd_to_eur_rate > 0:
+                    total_selling_value_eur = total_selling_value_usd * usd_to_eur_rate
+                    total_selling_value = f"{total_selling_value_usd:.2f} USD / {total_selling_value_eur:.2f} EUR"
+                else:
+                    total_selling_value = f"{total_selling_value_usd:.2f} USD / N/A EUR"
+            else:
+                total_selling_value = ''
+
             if currency != 'USDT' and not currency.startswith('ETF_'):
                 coin_id = self.data_manager.crypto_mapping.get(f"{currency}/USDT", None)
                 current_price_usd = current_crypto_prices.get(coin_id, {}).get('usd', 'N/A')
@@ -1066,7 +1187,10 @@ class ApplicationGUI:
                     f"{current_price_usd:.4f}" if current_price_usd != 'N/A' else 'N/A',
                     f"{current_price_eur:.4f}" if current_price_eur != 'N/A' else 'N/A',
                     f"{total_value_eur:.2f}" if total_value_eur != 'N/A' else 'N/A',
+                    f"{selling_price_usd}" if selling_price_usd else '',
+                    total_selling_value,
                     gain_loss_text
+                    
                 ))
 
             elif currency == 'USDT':
@@ -1099,6 +1223,8 @@ class ApplicationGUI:
                     f"{current_price_usd:.2f}",
                     f"{current_price_eur:.4f}" if current_price_eur != 'N/A' else 'N/A',
                     f"{total_value_eur:.2f}" if current_price_eur != 'N/A' else 'N/A',
+                    f"{''}",
+                    f"{''}",
                     gain_loss_text
                 ))
 
@@ -1212,11 +1338,22 @@ class ApplicationGUI:
         total_deposito_value = sum([float(deposito["Filled Amount"].replace(" EUR", "")) for deposito in self.data_manager.conto_deposito["Conto deposito"]])
         total_liquidity = self.eur_balance + self.usdt_balance * current_crypto_prices.get('tether', {}).get('eur', 0)
         total_portfolio_value = self.total_current_value_eur + total_liquidity + total_deposito_value + self.total_immobili_value
+        
+        total_potential_selling_value_eur = 0.0
+        for currency, selling_price_usd in self.selling_prices.items():
+            balance = self.balances.get(currency, 0.0)
+            if balance > 0 and selling_price_usd:
+                total_selling_value_usd = balance * selling_price_usd
+                usd_to_eur_rate = current_crypto_prices.get('tether', {}).get('eur', 0.0)
+                if usd_to_eur_rate > 0:
+                    total_selling_value_eur = total_selling_value_usd * usd_to_eur_rate
+                    total_potential_selling_value_eur += total_selling_value_eur
 
         self.recap_labels["saldo_finale"].config(text=f"{self.eur_balance:,.2f} EUR")
         self.recap_labels["totale_depositi"].config(text=f"{total_deposito_value:,.2f} EUR")
         self.recap_labels["saldo_investito"].config(text=f"{self.total_invested_excluding_eur:,.2f} EUR")
         self.recap_labels["valore_attuale"].config(text=f"{self.total_current_value_eur:,.2f} EUR")
+        self.recap_labels["valore_potenziale_vendita"].config(text=f"{total_potential_selling_value_eur:,.2f} EUR")
 
         def create_progressbar(label_text, value, target_value):
             frame = ttk.Frame(self.percentuali_content)
