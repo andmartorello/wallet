@@ -4,11 +4,13 @@
     "Immobili": 15,
     "BTC": 20,
     "ETH": 10,
-    "SOL": 3,
-    "altcoin": 1,
+    "altcoin": 10,
     "etf": {
         "MSCI World": 15,
-        "MSCI EM": 6
+        "MSCI EM": 0
+    },
+    "altcoin_details": {
+        "SOL": 50,
+        "CRO": 30
     }
 }
-
